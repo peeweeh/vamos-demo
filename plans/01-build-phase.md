@@ -28,14 +28,14 @@
     *   [ ] **RDS MySQL Instance:** `leet-sg-rds` (`db.t4g.micro`, 20GB gp3, Single-AZ).
 4.  **Auxiliary Services:**
     *   [x] **S3 Bucket:** `leet-sg-app-data` with a `seed/` folder.
-    *   [x] **DynamoDB Table:** `leet-sg-ddb` (On-demand, PK: `id` string).
-    *   [x] **SQS Queue:** `leet-sg-queue` (Standard).
-    *   [x] **SNS Topic:** `leet-sg-topic`.
-    *   [x] **Lambda Function:** `leet-sg-hello` (128MB, no VPC).
-    *   [x] **EFS File System:** `leet-sg-efs` (One Zone in `app-a`, empty).
+    *   [ ] **DynamoDB Table:** `leet-sg-ddb` (On-demand, PK: `id` string).
+    *   [ ] **SQS Queue:** `leet-sg-queue` (Standard).
+    *   [ ] **SNS Topic:** `leet-sg-topic`.
+    *   [ ] **Lambda Function:** `leet-sg-hello` (128MB, no VPC).
+    *   [ ] **EFS File System:** `leet-sg-efs` (One Zone in `app-a`, empty) - **SKIPPED**.
 5.  **EKS Cluster (Parked):**
-    *   [ ] **EKS Cluster:** `leet-sg-eks` (Public endpoint).
-    *   [ ] **Managed Node Group:** `leet-sg-ng` (`t3.small`, desired=1, min=0, max=1).
+    *   [ ] **EKS Cluster:** `leet-sg-eks` (Public endpoint) - **SKIPPED**.
+    *   [ ] **Managed Node Group:** `leet-sg-ng` (`t3.small`, desired=1, min=0, max=1) - **SKIPPED**.
 6.  **Final Touches:**
     *   [ ] **Tagging:** Apply `Project=leet-dr-demo`, `Environment=dev`, `RegionRole=source-sg`, `Owner=P`, `CleanupBy=2025-11-30` to all resources.
     *   [ ] **Parameters:** Use CloudFormation parameters for secrets and configurable values.

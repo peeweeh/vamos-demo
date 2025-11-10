@@ -1,6 +1,6 @@
 ﻿AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  CloudFormation stack for the 'Leet' demo environment in ap-southeast-1.
+  CloudFormation stack for the 'Leet by Vamos' demo environment in ap-southeast-1.
   Deploys a VPC with public, app, and database subnets.
 
 Parameters:
@@ -373,6 +373,76 @@ Resources:
         - !Ref SgDb
       PubliclyAccessible: false
       StorageType: gp3
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
+
+  # ------------------------------------------------------------
+  # Auxiliary Services
+  # ------------------------------------------------------------
+  DynamoDbTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: leet-sg-ddb
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
+
+  SqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: leet-sg-queue
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
+
+  SnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: leet-sg-topic
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: leet-sg-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  HelloLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: leet-sg-hello
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      MemorySize: 128
+      Timeout: 5
+      Code:
+        ZipFile: |
+          import json
+          def handler(event, context):
+              print("Hello from Lambda!")
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('Hello from Lambda!')
+              }
       Tags:
         - Key: Project
           Value: leet-dr-demo
