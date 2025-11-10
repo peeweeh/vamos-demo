@@ -1,0 +1,378 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  CloudFormation stack for the 'Leet' demo environment in ap-southeast-1.
+  Deploys a VPC with public, app, and database subnets.
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: '10.11.0.0/16'
+    Description: CIDR block for the VPC.
+  DbUser:
+    Type: String
+    Description: Username for the RDS database.
+    Default: 'fakeuser'
+  DbPassword:
+    Type: String
+    Description: Password for the RDS database.
+    Default: 'fakepassword123'
+
+Resources:
+  # ------------------------------------------------------------
+  # VPC and Networking
+  # ------------------------------------------------------------
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: leet-sg-vpc
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+        - Key: RegionRole
+          Value: source-sg
+        - Key: Owner
+          Value: P
+        - Key: CleanupBy
+          Value: '2025-11-30'
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.0.0/24'
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: leet-sg-public-a
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.1.0/24'
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: leet-sg-public-b
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  AppSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.10.0/24'
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: leet-sg-app-a
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  AppSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.11.0/24'
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: leet-sg-app-b
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  DbSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.20.0/24'
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: leet-sg-db-a
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  DbSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.21.0/24'
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: leet-sg-db-b
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: leet-sg-igw
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: leet-sg-rt-public
+        - Key: Project
+          Value: leet-dr-demo
+        - Key: Environment
+          Value: dev
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+  # ------------------------------------------------------------
+  # Security Groups
+  # ------------------------------------------------------------
+  SgAlb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: leet-sg-sg-alb
+      GroupDescription: "Allow HTTP from anywhere"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: leet-sg-sg-alb
+
+  SgWeb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: leet-sg-sg-web
+      GroupDescription: "Allow HTTP from ALB"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref SgAlb
+      Tags:
+        - Key: Name
+          Value: leet-sg-sg-web
+
+  SgDb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: leet-sg-sg-db
+      GroupDescription: "Allow MySQL from web servers"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SgWeb
+      Tags:
+        - Key: Name
+          Value: leet-sg-sg-db
+
+  # ------------------------------------------------------------
+  # Core Application
+  # ------------------------------------------------------------
+  AppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'leet-sg-app-data-${AWS::AccountId}'
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
+
+  WebInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: leet-sg-role-web
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: S3ReadPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${AppS3Bucket}/*'
+
+  WebLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: leet-sg-lt-web
+      LaunchTemplateData:
+        ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+        InstanceType: t3.micro
+        SecurityGroupIds:
+          - !Ref SgWeb
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 10
+              VolumeType: gp3
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            dnf -y install nginx mysql
+            systemctl enable --now nginx
+            
+            # Create a dummy file in S3
+            echo "Hello from S3" > /tmp/demo.txt
+            aws s3 cp /tmp/demo.txt s3://${AppS3Bucket}/seed/demo.txt
+
+            # Simple index.html
+            cat > /usr/share/nginx/html/index.html <<EOF
+            <html><body>
+            <h3>Leet demo</h3>
+            <p>Instance: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)</p>
+            <p>S3 sample: $(aws s3 cp s3://${AppS3Bucket}/seed/demo.txt -)</p>
+            <p>DB status: $(echo "select 'db-ok' as status;" | mysql -h ${RdsInstance.Endpoint.Address} -u ${DbUser} -p${DbPassword} 2>/dev/null | tail -1)</p>
+            </body></html>
+            EOF
+            
+            echo "OK" > /usr/share/nginx/html/health
+            systemctl reload nginx
+
+  Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: leet-sg-alb
+      Scheme: internet-facing
+      Subnets:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      SecurityGroups:
+        - !Ref SgAlb
+      Type: application
+
+  WebTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: leet-sg-tg-web
+      VpcId: !Ref VPC
+      Port: 80
+      Protocol: HTTP
+      HealthCheckPath: /health
+      TargetType: instance
+
+  AlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref Alb
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref WebTargetGroup
+
+  WebAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: leet-sg-asg-web
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebLaunchTemplate
+        Version: !GetAtt WebLaunchTemplate.LatestVersionNumber
+      MinSize: '1'
+      MaxSize: '1'
+      DesiredCapacity: '1'
+      TargetGroupARNs:
+        - !Ref WebTargetGroup
+      Tags:
+        - Key: Name
+          Value: leet-sg-web-instance
+          PropagateAtLaunch: true
+        - Key: Project
+          Value: leet-dr-demo
+          PropagateAtLaunch: true
+
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB Subnet Group for Leet SG
+      DBSubnetGroupName: leet-sg-db-subnetgrp
+      SubnetIds:
+        - !Ref DbSubnetA
+        - !Ref DbSubnetB
+
+  RdsInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: leet-sg-rds
+      DBInstanceClass: db.t4g.micro
+      AllocatedStorage: '20'
+      Engine: mysql
+      MasterUsername: !Ref DbUser
+      MasterUserPassword: !Ref DbPassword
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      VPCSecurityGroups:
+        - !Ref SgDb
+      PubliclyAccessible: false
+      StorageType: gp3
+      Tags:
+        - Key: Project
+          Value: leet-dr-demo
