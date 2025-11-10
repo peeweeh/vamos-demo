@@ -2,3 +2,8 @@
 - make sure you plan updating documentation when you make changes 
 - dont make stuff to long
 - practice DRY
+- always doublecheck plans if the tasks in plans are completed
+- dont put too much files and folders
+- simplify stuff to be created
+- stick to a standard naming convention
+- assume that the other developer is a serial killer

@@ -21,7 +21,12 @@ The stack deploys a three-tier web application along with a variety of serverles
 
 ## Deployment
 
-The stack is defined in `cloudformation/leet-sg-stack.yaml`. For detailed instructions on how to deploy the stack and populate it with sample data, see the [Runbook](./docs/runbook.md).
+The project consists of two CloudFormation stacks:
+
+1.  **Main Stack (Singapore)**: Deploys the primary application and services in `ap-southeast-1`.
+2.  **Tokyo Bucket Stack**: Deploys a supplementary S3 bucket in `ap-northeast-1`.
+
+For detailed instructions on how to deploy both stacks and populate them with sample data, see the [Runbook](./docs/runbook.md).
 
 ## Repository Structure
 ```

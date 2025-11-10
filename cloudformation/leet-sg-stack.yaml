@@ -8,6 +8,10 @@ Parameters:
     Type: String
     Default: '10.11.0.0/16'
     Description: CIDR block for the VPC.
+  ProjectTag:
+    Type: String
+    Default: 'vamos-leet'
+    Description: The value for the 'Project' tag applied to all resources.
   DbUser:
     Type: String
     Description: Username for the RDS database.
@@ -31,7 +35,7 @@ Resources:
         - Key: Name
           Value: leet-sg-vpc
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
         - Key: RegionRole
@@ -52,7 +56,7 @@ Resources:
         - Key: Name
           Value: leet-sg-public-a
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -67,7 +71,7 @@ Resources:
         - Key: Name
           Value: leet-sg-public-b
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -81,7 +85,7 @@ Resources:
         - Key: Name
           Value: leet-sg-app-a
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -95,7 +99,7 @@ Resources:
         - Key: Name
           Value: leet-sg-app-b
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -109,7 +113,7 @@ Resources:
         - Key: Name
           Value: leet-sg-db-a
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -123,7 +127,7 @@ Resources:
         - Key: Name
           Value: leet-sg-db-b
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -134,7 +138,7 @@ Resources:
         - Key: Name
           Value: leet-sg-igw
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -152,7 +156,7 @@ Resources:
         - Key: Name
           Value: leet-sg-rt-public
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
         - Key: Environment
           Value: dev
 
@@ -233,7 +237,7 @@ Resources:
       BucketName: !Sub 'leet-sg-app-data-${AWS::AccountId}'
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
 
   WebInstanceRole:
     Type: AWS::IAM::Role
@@ -347,7 +351,7 @@ Resources:
           Value: leet-sg-web-instance
           PropagateAtLaunch: true
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
           PropagateAtLaunch: true
 
   DbSubnetGroup:
@@ -375,7 +379,7 @@ Resources:
       StorageType: gp3
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
 
   # ------------------------------------------------------------
   # Auxiliary Services
@@ -393,7 +397,7 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
 
   SqsQueue:
     Type: AWS::SQS::Queue
@@ -401,7 +405,7 @@ Resources:
       QueueName: leet-sg-queue
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
 
   SnsTopic:
     Type: AWS::SNS::Topic
@@ -409,7 +413,7 @@ Resources:
       TopicName: leet-sg-topic
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -445,4 +449,4 @@ Resources:
               }
       Tags:
         - Key: Project
-          Value: leet-dr-demo
+          Value: !Ref ProjectTag

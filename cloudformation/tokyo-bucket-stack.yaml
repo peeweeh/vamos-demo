@@ -1,0 +1,32 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  CloudFormation stack for creating a supplementary S3 bucket in ap-northeast-1 (Tokyo)
+  for the 'Leet by Vamos' project.
+
+Parameters:
+  ProjectTag:
+    Type: String
+    Default: 'vamos-leet'
+    Description: The value for the 'Project' tag.
+  BucketName:
+    Type: String
+    Description: The name for the S3 bucket in Tokyo.
+    Default: 'vamos-leet-tokyo-bucket'
+
+Resources:
+  TokyoS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${BucketName}-${AWS::AccountId}'
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+        - Key: RegionRole
+          Value: target-jp
+
+Outputs:
+  BucketName:
+    Description: "The name of the S3 bucket created in Tokyo."
+    Value: !Ref TokyoS3Bucket

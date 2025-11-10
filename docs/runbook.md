@@ -7,14 +7,28 @@ This document provides step-by-step instructions for deploying and populating th
 - An AWS account where the Service Control Policies (SCPs) do not block the creation of the required resources.
 
 ## 2. Stack Deployment
-Deploy the CloudFormation stack using the following command. This will create all the necessary AWS resources.
+
+### 2.1. Main Stack (Singapore)
+Deploy the main CloudFormation stack to `ap-southeast-1`. This will create the VPC, application, and primary services.
 
 ```bash
 aws cloudformation deploy \
   --template-file cloudformation/leet-sg-stack.yaml \
   --stack-name leet-sg-demo-stack \
+  --parameter-overrides ProjectTag=vamos-leet \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
   --region ap-southeast-1
+```
+
+### 2.2. Tokyo Bucket Stack
+Deploy the supplementary stack to `ap-northeast-1` to create the S3 bucket in Japan.
+
+```bash
+aws cloudformation deploy \
+  --template-file cloudformation/tokyo-bucket-stack.yaml \
+  --stack-name leet-jp-bucket-stack \
+  --parameter-overrides ProjectTag=vamos-leet \
+  --region ap-northeast-1
 ```
 
 ## 3. Data Seeding
