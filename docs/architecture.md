@@ -15,7 +15,7 @@ The stack is designed to be a representative, multi-tier application environment
 - **Route Tables:** A public route table directs traffic to the IGW, while private route tables only allow local VPC traffic.
 
 ## Core Application
-The core of the demo is a classic three-tier web application.
+The core of the demo is a classic three-tier web application with an interactive form that writes to the database.
 
 ![Architecture Diagram](https://...placeholder-for-diagram.../architecture.png)
 
@@ -25,13 +25,25 @@ The core of the demo is a classic three-tier web application.
 
 2.  **Web Tier (EC2):**
     - **Auto Scaling Group (`leet-sg-asg-web`):** Manages a single `t3.micro` EC2 instance.
-    - **Launch Template (`leet-sg-lt-web`):** Defines the EC2 instance configuration, including the Amazon Linux 2023 AMI and user data to install and configure an nginx web server.
+    - **Launch Template (`leet-sg-lt-web`):** Defines the EC2 instance configuration, including the Amazon Linux 2023 AMI and user data to install and configure nginx with PHP-FPM.
     - **Security Group (`leet-sg-sg-web`):** Allows inbound traffic on port 80 only from the ALB.
+    - **Interactive Web Form:** The web server hosts a simple HTML/PHP form that allows visitors to submit their names, which are then stored in the RDS database. This demonstrates live data modification for disaster recovery scenarios.
 
 3.  **Database Tier (RDS):**
     - **RDS MySQL Instance (`leet-sg-rds`):** A `db.t4g.micro` MySQL database instance running in a single AZ.
     - **DB Subnet Group (`leet-sg-db-subnetgrp`):** Places the RDS instance in the private database subnets.
     - **Security Group (`leet-sg-sg-db`):** Allows inbound traffic on port 3306 only from the web tier security group.
+    - **Database Schema:** Contains a `guestbook` table with columns for `id`, `name`, and `timestamp` to store visitor submissions.
+
+## Disaster Recovery Demo Flow
+The interactive form enables a compelling DR demonstration:
+1. User submits a name via the web form (e.g., "Alice")
+2. Data is written to RDS database and displayed on the page
+3. Snapshot/backup is taken
+4. User submits another name (e.g., "Bob")
+5. Stack is destroyed or failure is simulated
+6. Stack is restored from the earlier snapshot
+7. Only "Alice" appears in the database, demonstrating successful point-in-time recovery
 
 ## Auxiliary Services
 To demonstrate broad service coverage for Cloud Rewind, the following serverless and managed services are also deployed:

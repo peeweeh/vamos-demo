@@ -19,6 +19,23 @@
     *   [x] **ALB Target Group:** `leet-sg-tg-web`.
     *   [x] **EC2 Launch Template & ASG:** `leet-sg-lt-web`, `leet-sg-asg-web`.
     *   [x] **RDS MySQL Instance:** `leet-sg-rds`.
+    *   [ ] **Web Application Files:**
+        - Create `web/` folder in repository
+        - Create `index.php` with form and database display logic
+        - Create `db-config.php` for database connection parameters (templated)
+        - Create `init-db.sql` for database schema initialization
+        - Keep files simple and self-contained
+    *   [ ] **S3 Upload Strategy:**
+        - Store web files in the S3 bucket (`leet-sg-app-data`) under a `webapp/` prefix
+        - Files will be uploaded before or during stack deployment
+        - EC2 UserData will download files from S3 to `/usr/share/nginx/html/`
+    *   [ ] **UserData Enhancement:** Update EC2 launch template to:
+        - Install PHP-FPM, php-mysqlnd, nginx
+        - Configure nginx to process PHP files
+        - Download web application files from S3
+        - Substitute RDS endpoint and credentials into db-config.php
+        - Initialize database schema by running init-db.sql against RDS
+        - Start/enable nginx and php-fpm services
 4.  **Auxiliary Services:**
     *   [x] **S3 Bucket:** `leet-sg-app-data`.
     *   [x] **DynamoDB Table:** `leet-sg-ddb`.

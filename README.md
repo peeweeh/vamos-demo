@@ -9,8 +9,9 @@ The stack deploys a three-tier web application along with a variety of serverles
 ### Core Application
 - **VPC**: A custom VPC (`10.11.0.0/16`) with public, application, and database subnets across two Availability Zones.
 - **Application Load Balancer**: A public-facing ALB that routes traffic to the web tier.
-- **EC2 Auto Scaling Group**: A single `t3.micro` EC2 instance running a basic nginx web server.
-- **RDS MySQL**: A `db.t4g.micro` single-AZ MySQL database for the application's backend.
+- **EC2 Auto Scaling Group**: A single `t3.micro` EC2 instance running nginx with PHP-FPM and an interactive web form.
+- **RDS MySQL**: A `db.t4g.micro` single-AZ MySQL database for the application's backend with a `guestbook` table for storing user submissions.
+- **Interactive Demo**: A web form allows visitors to submit names that are stored in the database, demonstrating live data modification for disaster recovery scenarios.
 
 ### Serverless & Auxiliary Components
 - **Amazon S3**: An S3 bucket (`leet-sg-app-data`) for application assets.
@@ -31,15 +32,21 @@ For detailed instructions on how to deploy both stacks and populate them with sa
 ## Repository Structure
 ```
 .
-├── README.md               # This file
+├── README.md                  # This file
 ├── cloudformation/
-│   └── leet-sg-stack.yaml  # The main CloudFormation template
+│   ├── leet-sg-stack.yaml     # The main CloudFormation template
+│   └── tokyo-vpc-stack.yaml   # Tokyo restoration VPC template
+├── web/
+│   ├── index.php              # Main web page with form
+│   ├── db-config.php          # Database connection config
+│   └── init-db.sql            # Database schema initialization
 ├── docs/
-│   └── ...                 # Architectural diagrams and runbooks (TBD)
+│   ├── architecture.md        # Architecture documentation
+│   └── runbook.md             # Deployment and operations guide
 └── plans/
-    ├── 01-build-phase.md   # Tasks for building the stack
-    ├── 02-test-phase.md    # Tasks for testing and validation
-    └── ...
+    ├── 01-build-phase.md      # Tasks for building the stack
+    ├── 02-test-phase.md       # Tasks for testing and validation
+    └── singapore-demo-plan.md # Singapore demo plan
 ```
 
 Cloud Rewind Multi Account Demo
