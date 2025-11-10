@@ -1,3 +1,4 @@
 - make sure you update plans on adhoc changes not related to plans
 - make sure you plan updating documentation when you make changes 
-- not too long
+- dont make stuff to long
+- practice DRY
