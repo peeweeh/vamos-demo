@@ -31,17 +31,18 @@
 
 ## Phase 2: Tokyo Resources (`ap-northeast-1`)
 
-1.  **S3 Bucket - COMPLETED:**
-    *   [x] **CloudFormation:** `cloudformation/tokyo-bucket-stack.yaml`.
-    *   [x] **Stack Name:** `leet-jp-bucket-stack`.
+1.  **S3 Bucket - COMBINED:**
+    *   [x] **CloudFormation:** Combined into `cloudformation/tokyo-vpc-stack.yaml`.
+    *   [x] **Stack Name:** Now part of `leet-jp-vpc-stack`.
     *   [x] **S3 Bucket:** Created successfully.
 
-2.  **Restoration VPC - PENDING:**
-    *   [ ] **Objective:** Create a minimal VPC for restoration demos.
-    *   [ ] **CloudFormation:** `cloudformation/tokyo-vpc-stack.yaml`.
-    *   [ ] **VPC:** `leet-jp-vpc-restore` (`10.31.0.0/16`).
-    *   [ ] **Subnets:** One public subnet `leet-jp-public-a-restore` (`10.31.0.0/24`).
-    *   [ ] **Internet Gateway & Routing:** Required for public access.
-    *   [ ] **Security Group:** Default SG open for outbound, no inbound rules.
-    *   [ ] **Deployment:** To be deployed as `leet-jp-vpc-stack`.
+2.  **Restoration VPC - COMPLETED:**
+    *   [x] **Objective:** Create a minimal VPC for restoration demos.
+    *   [x] **CloudFormation:** `cloudformation/tokyo-vpc-stack.yaml`.
+    *   [x] **VPC:** `leet-jp-vpc-restore` (`10.31.0.0/16`).
+    *   [x] **Subnets:** One public subnet `leet-jp-public-a-restore` (`10.31.0.0/24`).
+    *   [x] **Internet Gateway & Routing:** Required for public access.
+    *   [x] **Security Group:** Default SG open for outbound, no inbound rules.
+    *   [x] **S3 Bucket:** `vamos-leet-tokyo-bucket-${AWS::AccountId}` (combined into same stack).
+    *   [x] **Deployment:** To be deployed as `leet-jp-vpc-stack`.
 

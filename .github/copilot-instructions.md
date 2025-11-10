@@ -7,3 +7,6 @@
 - simplify stuff to be created
 - stick to a standard naming convention
 - assume that the other developer is a serial killer
+- run aws commands automatically, check outputs and fix by yourself
+- if there are any changes requested by the user outside the plan, update the plan, architecture and the readme accordingly
+- when

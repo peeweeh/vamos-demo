@@ -1,0 +1,147 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  CloudFormation stack for creating a minimal VPC and S3 bucket in ap-northeast-1 (Tokyo)
+  for restoration demos in the 'Leet by Vamos' project.
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: '10.31.0.0/16'
+    Description: CIDR block for the VPC.
+  ProjectTag:
+    Type: String
+    Default: 'vamos-leet'
+    Description: The value for the 'Project' tag applied to all resources.
+  BucketName:
+    Type: String
+    Description: The name for the S3 bucket in Tokyo.
+    Default: 'vamos-leet-tokyo-vpc-bucket'
+
+Resources:
+  # ------------------------------------------------------------
+  # VPC and Networking
+  # ------------------------------------------------------------
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: leet-jp-vpc-restore
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+        - Key: RegionRole
+          Value: target-jp
+        - Key: Owner
+          Value: P
+        - Key: CleanupBy
+          Value: '2025-11-30'
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.31.0.0/24'
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: leet-jp-public-a-restore
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: leet-jp-igw-restore
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: leet-jp-rt-public-restore
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  # ------------------------------------------------------------
+  # Security Groups
+  # ------------------------------------------------------------
+  DefaultSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: leet-jp-sg-default-restore
+      GroupDescription: "Default security group for restoration VPC - outbound only"
+      VpcId: !Ref VPC
+      # No ingress rules - outbound only
+      Tags:
+        - Key: Name
+          Value: leet-jp-sg-default-restore
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+
+  # ------------------------------------------------------------
+  # S3 Bucket
+  # ------------------------------------------------------------
+  TokyoS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${BucketName}-${AWS::AccountId}'
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: Environment
+          Value: dev
+        - Key: RegionRole
+          Value: target-jp
+
+Outputs:
+  VpcId:
+    Description: "The ID of the VPC created for restoration."
+    Value: !Ref VPC
+  PublicSubnetId:
+    Description: "The ID of the public subnet."
+    Value: !Ref PublicSubnetA
+  SecurityGroupId:
+    Description: "The ID of the default security group."
+    Value: !Ref DefaultSecurityGroup
+  BucketName:
+    Description: "The name of the S3 bucket created in Tokyo."
+    Value: !Ref TokyoS3Bucket
